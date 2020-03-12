@@ -13,12 +13,12 @@ const help = [
 ]
 
 //Connection Phase
-bot.login('Njg2OTQ1NTE0MTg4NDM5NTcz.XmoJ0g.8QpeULJbiw35QWaLSkBCNqNTumM')
+bot.login('Njg2OTQ1NTE0MTg4NDM5NTcz.Xmo6Bw.vB4b3GPUoaW3swWM6KKuMxkDhsA')
 //If ready...
 bot.on('ready', function () {
+
     console.log("Je suis connecté ! \nI'm connected !")
 })
-
 
 //When a user arrive on our server display a welcome message
 bot.on('guildMemberAdd', async member => {
@@ -77,6 +77,7 @@ bot.on('message', message => {
             if (!message.mentions.users.size) {
                 return message.reply("Vous avez besoin de tager un utilisateur pour voir ses infos! / You need to tag a user in order to show his infos!")
             } else {
+                let serverID = message.guild.id
                 let userID = message.mentions.users.first().id
                 let userLastMessage = message.mentions.users.first().lastMessage
                 let userLastMessageID = message.mentions.users.first().lastMessageID
@@ -86,6 +87,9 @@ bot.on('message', message => {
                 let user = message.author
                 let userIcon = message.author.avatarURL()
                 let rolesUser = message.member.roles.cache.map(role => role.name)
+                let listServerWhereUserIn = bot.guilds.cache.filter((i => i.members.resolveID(userID))).map((j => j.name))
+                let ServerWhereUserInOwnerName = bot.guilds.cache.filter((i => i.members.guild.id !== serverID)).map((j => j.owner.user.username))
+                let ServerWhereUserInOwnerDiscriminator = bot.guilds.cache.filter((i => i.members.guild.id !== serverID)).map((j => j.owner.user.discriminator))
                 let embed = new Discord.MessageEmbed()
                     .setColor('#0099ff')
                     .setTitle(`Informations sur / Informations about: ${taggedUser.username}`)
@@ -97,6 +101,8 @@ bot.on('message', message => {
                     .addField("ID du channel du dernier message / Channel ID of last message", userLastMessageChannelID)
                     .addField("Nom du channel avec le dernier message / Channel's name with the last message", '#' + userChannelLastMessageName)
                     .addField("Roles de l'utilisateur / User roles ", rolesUser)
+                    .addField("Nom des serveurs sur lesquels l'utilisateur est présent / Servers name on which user is present", listServerWhereUserIn)
+                    .addField("Propriétaires des serveurs sur lesquels l'utilisateur est présent / Owners of thoses Servers name on which user is present", `@${ServerWhereUserInOwnerName}#${ServerWhereUserInOwnerDiscriminator}`)
                     .setTimestamp()
                     .setFooter(`Auteur/Author: @${user.username + '#' + user.discriminator}`, `${userIcon}`);
                 return message.channel.send(embed)
@@ -182,7 +188,7 @@ bot.on('message', message => {
                 }
             }
         }
-    }else{
+    } else {
         return message.reply("Vous n'avez pas la permission de m'utiliser au vue de votre role ou du channel ou vous m'appelez \nYou don't have the permission to use me because of your role or the channel where you called me")
     }
 })
