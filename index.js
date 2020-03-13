@@ -13,26 +13,53 @@ const help = [
 ]
 
 //Connection Phase
-bot.login('Njg2OTQ1NTE0MTg4NDM5NTcz.Xmo6Bw.vB4b3GPUoaW3swWM6KKuMxkDhsA')
+bot.login('Njg2OTQ1NTE0MTg4NDM5NTcz.XmtMgw.NXumE5Kzq23xqM198jtq10btXTY')
 //If ready...
 bot.on('ready', function () {
-
     console.log("Je suis connecté ! \nI'm connected !")
 })
 
 //When a user arrive on our server display a welcome message
-bot.on('guildMemberAdd', async member => {
-    //Find channel to send welcome message
-    const channel = member.guild.channels.find('name', 'bienvenue')
-    //If not the channel abort
-    if (!channel) {
-        return
-    }
-    channel.send(`Bienvenue sur le serveur ${member} / Welcome on our server ${member}`)
-})
+bot.on('guildMemberAdd', member => {
+    console.log(member)
+    member.guild.channels.resolveID('687314493541449769').send(`Welcome`)
+});
+
+
+
 
 // Create an event listener for messages in order to display the url of their avatar
 bot.on('message', message => {
+    //If not admin...
+    if (message.content === `${prefix}help`) {
+        let botImg = bot.user.avatarURL()
+        let user = message.author
+        let userIcon = message.author.avatarURL()
+        let embed = new Discord.MessageEmbed()
+            .setColor('#0099ff')
+            .setTitle('Liste des commandes / Commands List')
+            .setDescription('Voici la liste des commandes \nThere you are, this is the commands list ')
+            .setThumbnail(botImg)
+            .addField('Version: ', 'v.1.0')
+            .addField(`${prefix}help:`, help[0])
+            .addField(`${prefix}avatar [utilisateur/user]:`, help[1])
+            .setTimestamp()
+            .setFooter(`Auteur/Author: @${user.username + '#' + user.discriminator}`, `${userIcon}`)
+        message.author.send(embed)
+    }
+    // If the message is "prefix+avatar"
+    if (message.content.startsWith(`${prefix}avatar`)) {
+        //We get the user mentionned
+        let taggedUser = message.mentions.users.first()
+        // If didn't mentione someone, return error
+        if (!message.mentions.users.size) {
+            return message.reply("Vous avez besoin de tager un utilisateur pour voir son avatar! / You need to tag a user in order to show his own avatar!")
+        } else {
+            // Send the user's avatar URL
+            return message.reply(message.author.displayAvatarURL())
+        }
+    }
+    //If admin...
     if (message.member.hasPermission(adminPermissions)) {
         if (message.content === `${prefix}help`) {
             let botImg = bot.user.avatarURL()
@@ -51,24 +78,9 @@ bot.on('message', message => {
                 .addField(`${prefix}kick [utilisateur/user]:`, help[4])
                 .addField(`${prefix}clear [nombre/number]:`, help[5])
                 .setTimestamp()
-                .setFooter(`Auteur/Author: @${user.username + '#' + user.discriminator}`, `${userIcon}`);
+                .setFooter(`Auteur/Author: @${user.username + '#' + user.discriminator}`, `${userIcon}`)
             message.author.send(embed)
         }
-
-
-        // If the message is "prefix+avatar"
-        if (message.content.startsWith(`${prefix}avatar`)) {
-            //We get the user mentionned
-            let taggedUser = message.mentions.users.first()
-            // If didn't mentione someone, return error
-            if (!message.mentions.users.size) {
-                return message.reply("Vous avez besoin de tager un utilisateur pour voir son avatar! / You need to tag a user in order to show his own avatar!")
-            } else {
-                // Send the user's avatar URL
-                return message.reply(message.author.displayAvatarURL())
-            }
-        }
-
         // If the message start with "prefix+user"
         if (message.content.startsWith(`${prefix}user`)) {
             //We get the user mentionned
@@ -77,72 +89,77 @@ bot.on('message', message => {
             if (!message.mentions.users.size) {
                 return message.reply("Vous avez besoin de tager un utilisateur pour voir ses infos! / You need to tag a user in order to show his infos!")
             } else {
+                // console.log(bot.)
                 let serverID = message.guild.id
                 let userID = message.mentions.users.first().id
                 let userLastMessage = message.mentions.users.first().lastMessage
                 let userLastMessageID = message.mentions.users.first().lastMessageID
                 let userLastMessageChannelID = message.mentions.users.first().lastMessageChannelID
                 let userChannelLastMessageName = message.member.lastMessage.channel.name
-                let botImg = bot.user.avatarURL()
                 let user = message.author
                 let userIcon = message.author.avatarURL()
                 let rolesUser = message.member.roles.cache.map(role => role.name)
                 let listServerWhereUserIn = bot.guilds.cache.filter((i => i.members.resolveID(userID))).map((j => j.name))
                 let ServerWhereUserInOwnerName = bot.guilds.cache.filter((i => i.members.guild.id !== serverID)).map((j => j.owner.user.username))
                 let ServerWhereUserInOwnerDiscriminator = bot.guilds.cache.filter((i => i.members.guild.id !== serverID)).map((j => j.owner.user.discriminator))
+                let creationUserAccountDate = taggedUser.createdAt.toLocaleDateString()
                 let embed = new Discord.MessageEmbed()
                     .setColor('#0099ff')
                     .setTitle(`Informations sur / Informations about: ${taggedUser.username}`)
                     .setDescription(`Voici les informations générales sur: ${taggedUser.username} \nThere you are, this is the general informations about: ${taggedUser.username}`)
-                    .setThumbnail(botImg)
+                    .setThumbnail(taggedUser.avatarURL())
                     .addField('ID: ', userID)
                     .addField('ID du dernier message / Last message ID', userLastMessageID)
                     .addField("Dernier message / Last message", userLastMessage)
                     .addField("ID du channel du dernier message / Channel ID of last message", userLastMessageChannelID)
                     .addField("Nom du channel avec le dernier message / Channel's name with the last message", '#' + userChannelLastMessageName)
                     .addField("Roles de l'utilisateur / User roles ", rolesUser)
-                    .addField("Nom des serveurs sur lesquels l'utilisateur est présent / Servers name on which user is present", listServerWhereUserIn)
-                    .addField("Propriétaires des serveurs sur lesquels l'utilisateur est présent / Owners of thoses Servers name on which user is present", `@${ServerWhereUserInOwnerName}#${ServerWhereUserInOwnerDiscriminator}`)
+                    .addField("Nom des serveurs sur lesquels l'utilisateur est présent /\nServers name on which user is present", listServerWhereUserIn)
+                    .addField("Propriétaires des serveurs sur lesquels l'utilisateur est présent / Owners of thoses Servers name on which user is present", `@${ServerWhereUserInOwnerName + '#' + ServerWhereUserInOwnerDiscriminator}`)
+                    .addField("Date de création du compte de l'utilisateur /\nCreation Date of user's account", creationUserAccountDate)
                     .setTimestamp()
-                    .setFooter(`Auteur/Author: @${user.username + '#' + user.discriminator}`, `${userIcon}`);
+                    .setFooter(`Auteur/Author: @${user.username + '#' + user.discriminator}`, `${userIcon}`)
                 return message.channel.send(embed)
             }
         }
 
         // If the message is "prefix+info"
         if (message.content === `${prefix}info`) {
+            let nitroUsers = message.guild.premiumSubscriptionCount
+            let serverLevel = message.guild.premiumTier
             let serverID = message.guild.id
             let serverOwner = message.guild.owner
             let humans = message.guild.members.cache.filter(member => !member.user.bot).size
             let bots = message.guild.members.cache.filter(member => member.user.bot).size
             let onlineCount = message.guild.members.cache.filter(member => member.presence.status === 'online').size
-            let botImg = bot.user.avatarURL()
             let user = message.author
             let userIcon = message.author.avatarURL()
             let serverList = bot.guilds.cache.map(member => member.name)
             let serverUserList = bot.guilds.cache.map(member => member.members.cache.map(name => name.user.username))
+            let creationDateServer = message.guild.createdAt.toLocaleDateString()
             let embed = new Discord.MessageEmbed()
                 .setColor('#0099ff')
                 .setTitle("Stats Serveur / Server Stats")
                 .setDescription('Voici les informations générales de votre serveur\nThere you are, this is the general informations of your server')
-                .setThumbnail(botImg)
+                .setThumbnail(message.guild.iconURL())
                 .addField('ID du serveur / Server ID', serverID)
                 .addField('Status du robot / Bot Status', bot.user.presence.status)
                 .addField('Liste des seveurs où le robot est actif / Servers list on which the bot is active', serverList)
                 .addField('Liste des membres où le robot est actif / Members list on which the bot is active', serverUserList)
-                .addField("Nombres de membres / member's number", Discord.Intents.FLAGS.GUILD_MEMBERS)
+                .addField("Nombres de membres / member's number", humans + bots)
                 .addField("Nombres d'humains / Human's number", humans)
                 .addField("Nombres de robots / Bot's number", bots)
-                .addField("Nombres de personnes en ligne / Number of folks online", onlineCount)
+                .addField("Nombres de personnes en ligne / Number of persons online", onlineCount)
+                .addField('Nombres de personnes possédant Nitro / Number of persons having Nitro', nitroUsers)
+                .addField('Niveau de boost serveur / Server boost level', serverLevel)
                 .addField('Propriétaire du serveur / Server owner', serverOwner)
+                .addField('Date de création du serveur /\nCreation date of the server', creationDateServer)
                 .setTimestamp()
-                .setFooter(`Auteur/Author: @${user.username + '#' + user.discriminator}`, `${userIcon}`);
+                .setFooter(`Auteur/Author: @${user.username + '#' + user.discriminator}`, `${userIcon}`)
             return message.channel.send(embed)
         }
         // If the message content starts with "!kick"
         if (message.content.startsWith(`${prefix}kick`)) {
-            // Assuming we mention someone in the message, this will return the user
-            // Read more about mentions over at https://discord.js.org/#/docs/main/master/class/MessageMentions
             let user = message.mentions.users.first()
             // If we have a user mentioned
             if (user) {
@@ -189,6 +206,6 @@ bot.on('message', message => {
             }
         }
     } else {
-        return message.reply("Vous n'avez pas la permission de m'utiliser au vue de votre role ou du channel ou vous m'appelez \nYou don't have the permission to use me because of your role or the channel where you called me")
+        return
     }
 })
